@@ -7,145 +7,176 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid #e2e8f0; }
         .status-pending { background-color: #fef9c3; color: #854d0e; }
         .status-accepted { background-color: #dcfce7; color: #166534; }
         .status-denied { background-color: #fee2e2; color: #991b1b; }
-        .nav-btn.active-tab { background-color: #0f172a; color: white; }
+        .nav-btn.active-tab { background-color: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .logo-img { width: 100%; height: 100%; object-fit: contain; }
     </style>
 </head>
 <body class="text-slate-800">
 
-    <div id="app" class="min-h-screen flex flex-col">
-        <!-- Login Screen -->
-        <div id="login-screen" class="flex-grow flex items-center justify-center p-4">
-            <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100">
+    <div id="app-root">
+        <!-- Loading -->
+        <div id="loading-overlay" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-slate-500 font-medium">Connecting to Wellfield Servers...</p>
+        </div>
+
+        <!-- Login -->
+        <div id="login-screen" class="hidden min-h-screen flex items-center justify-center p-4 bg-slate-50">
+            <div class="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md border border-slate-100">
                 <div class="text-center mb-8">
-                    <img src="https://cdn.discordapp.com/attachments/1450890580367380564/1457484530934878430/image.png?ex=695c2bbe&is=695ada3e&hm=d55476b0890e63694ff1c7fa4bab30a5dcc6649826c93752777f424c74f098dd&" alt="Logo" class="w-24 h-24 mx-auto mb-6 object-contain">
-                    <h1 class="text-3xl font-bold text-slate-900">Staff Portal</h1>
-                    <p class="text-slate-500 mt-2">Wellfield Management Systems</p>
+                    <div class="w-24 h-24 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center p-2 shadow-sm border border-slate-100 overflow-hidden">
+                        <img src="https://cdn.discordapp.com/attachments/1450890580367380564/1457484530934878430/image.png?ex=695cd47e&is=695b82fe&hm=990baf8a07f45cd06e64833ae1b0f4e3a25362f8ce74dc63fe951ca3a42c42ff&" alt="Wellfield Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/100?text=WF'">
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-900">Wellfield Staff</h1>
+                    <p class="text-slate-400 text-sm">Secure Portal Access</p>
                 </div>
                 <form id="login-form" class="space-y-4">
-                    <input type="text" id="username" required placeholder="Username" class="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-                    <input type="password" id="password" required placeholder="Password" class="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-                    <button type="submit" id="login-btn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-black transition-all">Sign In</button>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase text-slate-400 ml-2">Username</label>
+                        <input type="text" id="username" required class="w-full p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase text-slate-400 ml-2">Password</label>
+                        <input type="password" id="password" required class="w-full p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 mt-2">Sign In</button>
+                    <div id="login-error" class="hidden text-center text-xs text-red-500 mt-2 font-semibold"></div>
                 </form>
-                <p class="mt-6 text-center text-xs text-slate-400">admin / setup123</p>
             </div>
         </div>
 
         <!-- Dashboard -->
-        <div id="dashboard" class="hidden flex-grow flex flex-col">
-            <nav class="glass-nav border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div id="dashboard" class="hidden min-h-screen flex flex-col">
+            <nav class="glass-nav px-8 py-4 flex items-center justify-between sticky top-0 z-50">
                 <div class="flex items-center gap-4">
-                    <img src="https://cdn.discordapp.com/attachments/1450890580367380564/1457484530934878430/image.png?ex=695c2bbe&is=695ada3e&hm=d55476b0890e63694ff1c7fa4bab30a5dcc6649826c93752777f424c74f098dd&" alt="Logo" class="w-10 h-10 object-contain">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-slate-100 p-1">
+                        <img src="https://cdn.discordapp.com/attachments/1450890580367380564/1457484530934878430/image.png?ex=695cd47e&is=695b82fe&hm=990baf8a07f45cd06e64833ae1b0f4e3a25362f8ce74dc63fe951ca3a42c42ff&" alt="WF" class="logo-img" onerror="this.src='https://via.placeholder.com/50?text=WF'">
+                    </div>
                     <div>
-                        <h2 class="font-bold text-slate-900 leading-none">Wellfield Staff</h2>
-                        <span id="role-badge" class="text-[10px] font-black uppercase tracking-widest text-blue-600">Staff Member</span>
+                        <h2 class="font-bold text-slate-900 leading-none">Wellfield Portal</h2>
+                        <span id="role-badge" class="text-[10px] font-bold uppercase text-blue-500 tracking-wider">Staff</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-6">
-                    <span id="display-name" class="font-bold text-sm text-slate-600"></span>
-                    <button onclick="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold">LOGOUT</button>
+                    <div class="text-right hidden sm:block">
+                        <p id="display-name" class="font-bold text-sm text-slate-800 leading-none"></p>
+                        <span class="text-[10px] text-slate-400">Authenticated Session</span>
+                    </div>
+                    <button onclick="logout()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-600 transition-all">LOGOUT</button>
                 </div>
             </nav>
 
             <div class="flex flex-grow overflow-hidden">
+                <!-- Sidebar -->
                 <aside class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-2 overflow-y-auto">
-                    <button onclick="switchTab('notices')" class="nav-btn active-tab flex items-center gap-3 p-4 rounded-xl font-bold transition-all text-slate-600 hover:bg-slate-50" data-tab="notices">
-                        <i class="fas fa-bullhorn"></i> Notices
+                    <button onclick="switchTab('notices')" class="nav-btn active-tab flex items-center gap-3 p-4 rounded-xl font-semibold transition-all text-slate-500 hover:bg-slate-50" data-tab="notices">
+                        <i class="fas fa-layer-group w-5"></i> Dashboard
                     </button>
-                    <button onclick="switchTab('requests')" class="nav-btn flex items-center gap-3 p-4 rounded-xl font-bold transition-all text-slate-600 hover:bg-slate-50" data-tab="requests">
-                        <i class="fas fa-calendar-alt"></i> Absences/LOA
+                    <button onclick="switchTab('requests')" class="nav-btn flex items-center gap-3 p-4 rounded-xl font-semibold transition-all text-slate-500 hover:bg-slate-50" data-tab="requests">
+                        <i class="fas fa-envelope-open w-5"></i> Absences
                     </button>
-                    <button onclick="switchTab('my-stats')" class="nav-btn flex items-center gap-3 p-4 rounded-xl font-bold transition-all text-slate-600 hover:bg-slate-50" data-tab="my-stats">
-                        <i class="fas fa-chart-bar"></i> My Records
+                    <button onclick="switchTab('my-stats')" class="nav-btn flex items-center gap-3 p-4 rounded-xl font-semibold transition-all text-slate-500 hover:bg-slate-50" data-tab="my-stats">
+                        <i class="fas fa-user-circle w-5"></i> My Profile
                     </button>
                     
                     <div id="admin-menu" class="hidden mt-6 pt-6 border-t border-slate-100 space-y-2">
-                        <p class="text-[10px] font-black text-slate-400 uppercase px-4 mb-2">Admin Tools</p>
-                        <button onclick="switchTab('attendance')" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl font-bold transition-all text-slate-600 hover:bg-slate-50" data-tab="attendance">
-                            <i class="fas fa-clipboard-user"></i> Session Attendance
+                        <p class="text-[10px] font-bold text-slate-400 uppercase px-4 mb-2 tracking-widest">Administration</p>
+                        <button onclick="switchTab('attendance')" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl font-semibold transition-all text-slate-500 hover:bg-slate-50" data-tab="attendance">
+                            <i class="fas fa-clipboard-check w-5"></i> Attendance
                         </button>
-                        <button onclick="switchTab('admin-requests')" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl font-bold transition-all text-slate-600 hover:bg-slate-50" data-tab="admin-requests">
-                            <i class="fas fa-envelope-open-text"></i> Pending Requests
+                        <button onclick="switchTab('admin-requests')" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl font-semibold transition-all text-slate-500 hover:bg-slate-50" data-tab="admin-requests">
+                            <i class="fas fa-tasks w-5"></i> Requests
                         </button>
-                        <button onclick="switchTab('manage-staff')" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl font-bold transition-all text-slate-600 hover:bg-slate-50" data-tab="manage-staff">
-                            <i class="fas fa-user-gear"></i> Manage Staff
+                        <button onclick="switchTab('manage-staff')" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl font-semibold transition-all text-slate-500 hover:bg-slate-50" data-tab="manage-staff">
+                            <i class="fas fa-users-cog w-5"></i> Staff Mgmt
                         </button>
                     </div>
                 </aside>
 
-                <main class="flex-grow p-8 overflow-y-auto custom-scrollbar">
-                    <div id="tab-notices" class="tab-content space-y-6">
+                <main class="flex-grow p-8 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                    <div id="tab-notices" class="tab-content active space-y-6">
                         <div class="flex justify-between items-center">
-                            <h1 class="text-2xl font-bold">Important Notices</h1>
-                            <button id="btn-add-notice" onclick="openNoticeModal()" class="hidden bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold">Post Notice</button>
+                            <h1 class="text-2xl font-bold text-slate-800">Staff Announcements</h1>
+                            <button id="btn-add-notice" onclick="openNoticeModal()" class="hidden bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-100">Post Notice</button>
                         </div>
                         <div id="notices-list" class="grid grid-cols-1 gap-4"></div>
                     </div>
 
-                    <div id="tab-requests" class="tab-content hidden space-y-6">
+                    <div id="tab-requests" class="tab-content space-y-6">
                         <div class="flex justify-between items-center">
-                            <h1 class="text-2xl font-bold">My Absence Requests</h1>
+                            <h1 class="text-2xl font-bold text-slate-800">My Requests</h1>
                             <div class="flex gap-2">
-                                <button onclick="openRequestModal('LOA')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Request LOA</button>
-                                <button onclick="openRequestModal('Absence')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold">Session Absence</button>
+                                <button onclick="openRequestModal('LOA')" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold">Request LOA</button>
+                                <button onclick="openRequestModal('Absence')" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold">Report Absence</button>
                             </div>
                         </div>
                         <div id="my-requests-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     </div>
 
-                    <div id="tab-my-stats" class="tab-content hidden space-y-6">
-                        <h1 class="text-2xl font-bold">Attendance & Strikes</h1>
+                    <div id="tab-my-stats" class="tab-content space-y-6">
+                        <h1 class="text-2xl font-bold text-slate-800">Performance & Records</h1>
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm col-span-2">
-                                <h2 class="font-bold mb-4">Strike History</h2>
+                                <h2 class="font-bold mb-4 flex items-center gap-2"><i class="fas fa-gavel text-red-500"></i> Disciplinary Record</h2>
                                 <div id="my-strikes" class="space-y-3"></div>
                             </div>
-                            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm text-center">
-                                <h2 class="font-bold mb-2">Attendance Summary</h2>
-                                <div id="my-attendance-rating" class="text-5xl font-black text-blue-600 my-4">--%</div>
-                                <p class="text-xs text-slate-400">Current Rating</p>
+                            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm text-center">
+                                <h2 class="font-bold text-slate-400 text-xs uppercase mb-4">Attendance Rating</h2>
+                                <div id="my-attendance-rating" class="text-6xl font-black text-blue-600 my-4">--%</div>
+                                <p class="text-xs font-medium text-slate-500">Calculated from last 30 days</p>
                             </div>
                         </div>
                     </div>
 
-                    <div id="tab-attendance" class="tab-content hidden space-y-6">
-                        <h1 class="text-2xl font-bold">Session Attendance</h1>
+                    <div id="tab-attendance" class="tab-content space-y-6">
+                        <h1 class="text-2xl font-bold text-slate-800">Session Management</h1>
                         <div class="bg-white p-8 rounded-3xl border border-slate-200">
-                            <div class="flex gap-4 mb-6">
-                                <input type="date" id="attendance-date" class="border rounded-xl px-4 py-2 outline-none">
-                                <input type="text" id="attendance-session-name" placeholder="Session Name (e.g. Afternoon Shift)" class="flex-grow border rounded-xl px-4 py-2 outline-none">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block ml-1">Session Date</label>
+                                    <input type="date" id="attendance-date" class="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block ml-1">Session Description</label>
+                                    <input type="text" id="attendance-session-name" placeholder="e.g. Inset Training" class="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
                             </div>
-                            <div id="attendance-roster" class="divide-y divide-slate-100"></div>
-                            <button onclick="submitAttendance()" class="mt-8 w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Submit Attendance</button>
+                            <div class="border-t pt-6">
+                                <div id="attendance-roster" class="divide-y divide-slate-100"></div>
+                            </div>
+                            <button onclick="submitAttendance()" class="mt-8 w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">Log All Results</button>
                         </div>
                     </div>
 
-                    <div id="tab-admin-requests" class="tab-content hidden space-y-6">
-                        <h1 class="text-2xl font-bold">Manage Requests</h1>
+                    <div id="tab-admin-requests" class="tab-content space-y-6">
+                        <h1 class="text-2xl font-bold text-slate-800">Review Inbox</h1>
                         <div id="admin-requests-list" class="grid grid-cols-1 gap-4"></div>
                     </div>
 
-                    <div id="tab-manage-staff" class="tab-content hidden space-y-6">
+                    <div id="tab-manage-staff" class="tab-content space-y-6">
                         <div class="flex justify-between items-center">
-                            <h1 class="text-2xl font-bold">Staff Directory</h1>
-                            <button onclick="openStaffModal()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold">Add Staff</button>
+                            <h1 class="text-2xl font-bold text-slate-800">Staff Management</h1>
+                            <button onclick="openStaffModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg">Onboard Staff</button>
                         </div>
-                        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden">
+                        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 border-b">
                                     <tr>
-                                        <th class="p-4">Staff Member</th>
-                                        <th class="p-4">Discord / Roblox</th>
-                                        <th class="p-4">Strikes</th>
-                                        <th class="p-4">Action</th>
+                                        <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Title & Name</th>
+                                        <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Social Handles</th>
+                                        <th class="p-4 text-[10px] font-bold uppercase text-slate-400 text-center">Strikes</th>
+                                        <th class="p-4 text-[10px] font-bold uppercase text-slate-400 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="staff-table-body"></tbody>
@@ -157,10 +188,9 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="modal-container" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div id="modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl relative z-10 p-8 max-h-[90vh] overflow-y-auto"></div>
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div id="modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-xl relative z-10 p-8 max-h-[90vh] overflow-y-auto custom-scrollbar"></div>
     </div>
 
     <script type="module">
@@ -168,130 +198,177 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, onSnapshot, updateDoc, arrayUnion, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        const firebaseConfig = {
             apiKey: "AIzaSyDpt6nXzvsd87KE4yWGgQh3uyBI5LTjDYI",
             authDomain: "wellfieldschoolwebsitestaff.firebaseapp.com",
             projectId: "wellfieldschoolwebsitestaff",
             storageBucket: "wellfieldschoolwebsitestaff.firebasestorage.app",
             messagingSenderId: "366345454956",
-            appId: "1:366345454956:web:55a3a290ba9f2867895f49"
+            appId: "1:366345454956:web:55a3a290ba9f2867895f49",
+            measurementId: "G-61320C6RG0"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wellfield-staff-portal';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wellfield-staff-portal-v2';
 
         let currentUser = null;
         let staffList = [];
         let globalRequests = [];
         let attendanceLogs = [];
-        let authReady = false;
-        let currentAuthUser = null;
+        let authUser = null;
 
-        const initAuth = async () => {
+        const startApp = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenErr) {
+                        await signInAnonymously(auth);
+                    }
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (e) {
-                await signInAnonymously(auth);
+            } catch (err) {
+                console.error("Firebase auth initialization failed", err);
             }
         };
 
-        initAuth();
-
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentAuthUser = user;
-                authReady = true;
-                const session = localStorage.getItem('wf_staff_session');
-                if (session) applySession(JSON.parse(session));
+            authUser = user;
+            document.getElementById('loading-overlay').classList.add('hidden');
+            
+            const saved = localStorage.getItem('wf_session_active');
+            if (saved) {
+                const data = JSON.parse(saved);
+                verifyUser(data.username, data.password, true);
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
             }
         });
 
-        function applySession(session) {
-            currentUser = session;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('display-name').innerText = session.username;
-            document.getElementById('role-badge').innerText = session.role === 'admin' ? 'Administrator' : 'Staff Member';
-            if (session.role === 'admin') {
-                document.getElementById('admin-menu').classList.remove('hidden');
-                document.getElementById('btn-add-notice').classList.remove('hidden');
+        async function verifyUser(u, p, auto = false) {
+            const errorEl = document.getElementById('login-error');
+            if (errorEl) errorEl.classList.add('hidden');
+
+            if (u === 'admin' && p === 'wellfield2024') {
+                proceedLogin({ username: 'Administrator', role: 'admin', uid: 'root' });
+                return;
             }
-            startListeners();
+
+            if (!authUser) return;
+
+            try {
+                const userRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+                const snap = await getDocs(userRef);
+                
+                let found = null;
+                snap.forEach(d => {
+                    const ud = d.data();
+                    if (ud.username === u && ud.password === p) found = { ...ud, uid: d.id };
+                });
+
+                if (found) {
+                    proceedLogin(found);
+                } else if (!auto && errorEl) {
+                    errorEl.innerText = "Invalid username or password.";
+                    errorEl.classList.remove('hidden');
+                } else if (auto) {
+                    logout();
+                }
+            } catch (e) {
+                console.error("User verification error:", e);
+            }
         }
 
-        function startListeners() {
-            if (!currentAuthUser || !currentUser) return;
+        function proceedLogin(user) {
+            currentUser = user;
+            localStorage.setItem('wf_session_active', JSON.stringify(user));
+            
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('display-name').innerText = user.username;
+            document.getElementById('role-badge').innerText = user.role.toUpperCase();
+            
+            if (user.role === 'admin') {
+                document.getElementById('admin-menu').classList.remove('hidden');
+                document.getElementById('btn-add-notice').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-menu').classList.add('hidden');
+                document.getElementById('btn-add-notice').classList.add('hidden');
+            }
+
+            syncData();
+        }
+
+        function syncData() {
+            if (!authUser) return;
 
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'notices'), (snap) => {
                 const list = document.getElementById('notices-list');
                 if(!list) return;
                 list.innerHTML = '';
-                snap.docs.forEach(d => {
-                    const n = d.data();
+                const sorted = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+                sorted.forEach(n => {
                     list.innerHTML += `
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative">
-                            ${currentUser.role === 'admin' ? `<button onclick="deleteDocById('notices', '${d.id}')" class="absolute top-4 right-4 text-red-300 hover:text-red-500"><i class="fas fa-trash"></i></button>` : ''}
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative group">
+                            ${currentUser.role === 'admin' ? `<button onclick="deleteData('notices', '${n.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>` : ''}
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded font-black uppercase">ADMIN NOTICE</span>
+                                <span class="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded font-bold uppercase">Update</span>
                                 <span class="text-[10px] text-slate-400 font-bold">${n.date}</span>
                             </div>
                             <h3 class="text-lg font-bold text-slate-900">${n.title}</h3>
-                            <p class="text-sm text-slate-600 mt-2 whitespace-pre-wrap">${n.content}</p>
-                            <div class="mt-4 pt-4 border-t border-slate-50 text-[10px] font-bold text-slate-400">POSTED BY ${n.author.toUpperCase()}</div>
+                            <p class="text-sm text-slate-500 mt-2 whitespace-pre-wrap leading-relaxed">${n.content}</p>
+                            <div class="mt-4 pt-4 border-t border-slate-50 text-[9px] font-bold text-slate-400 uppercase">Posted By ${n.author}</div>
                         </div>`;
                 });
-            });
+            }, (err) => console.error(err));
 
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), (snap) => {
                 globalRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderRequests();
-                if (currentUser.role === 'admin') renderRoster();
-            });
+                updateRequestsUI();
+                if (currentUser.role === 'admin') updateRosterUI();
+            }, (err) => console.error(err));
 
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (snap) => {
                 staffList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderStaffDirectory();
-                if (currentUser.role === 'admin') renderRoster();
-                updateMyStats();
-            });
+                updateStaffTable();
+                if (currentUser.role === 'admin') updateRosterUI();
+                refreshProfile();
+            }, (err) => console.error(err));
 
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'attendance_logs'), (snap) => {
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'), (snap) => {
                 attendanceLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                updateMyStats();
-            });
+                refreshProfile();
+            }, (err) => console.error(err));
         }
 
-        function renderRequests() {
+        function updateRequestsUI() {
             const myList = document.getElementById('my-requests-list');
             const adminList = document.getElementById('admin-requests-list');
-            if(!myList || !adminList || !currentUser) return;
+            if(!myList || !adminList) return;
             myList.innerHTML = '';
             adminList.innerHTML = '';
+
             globalRequests.forEach(r => {
                 const card = `
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex justify-between items-start mb-3">
                             <div>
-                                <span class="text-[10px] font-black uppercase ${r.type === 'LOA' ? 'text-blue-600' : 'text-slate-600'}">${r.type} REQUEST</span>
-                                <h4 class="font-bold">${r.staffName}</h4>
+                                <span class="text-[9px] font-bold uppercase ${r.type === 'LOA' ? 'text-blue-500' : 'text-slate-500'} tracking-widest">${r.type}</span>
+                                <h4 class="font-bold text-slate-800">${r.staffName}</h4>
                             </div>
-                            <span class="px-2 py-1 rounded text-[10px] font-black uppercase status-${r.status}">${r.status}</span>
+                            <span class="px-2 py-1 rounded text-[9px] font-bold uppercase status-${r.status}">${r.status}</span>
                         </div>
-                        <div class="text-xs space-y-1 mb-4">
+                        <div class="text-[11px] space-y-1 mb-4 text-slate-500">
                             <p><b>Date:</b> ${r.date}</p>
                             <p><b>Reason:</b> ${r.reason}</p>
-                            ${r.adminReason ? `<p class="mt-2 p-2 bg-slate-50 border rounded-lg italic"><b>Admin Note:</b> ${r.adminReason}</p>` : ''}
                         </div>
                         ${currentUser.role === 'admin' && r.status === 'pending' ? `
                             <div class="flex gap-2">
-                                <button onclick="handleRequest('${r.id}', 'accepted')" class="flex-grow bg-green-600 text-white text-xs font-bold py-2 rounded-lg">Accept</button>
-                                <button onclick="handleRequest('${r.id}', 'denied')" class="flex-grow bg-red-600 text-white text-xs font-bold py-2 rounded-lg">Deny</button>
+                                <button onclick="processRequest('${r.id}', 'accepted')" class="flex-grow bg-green-600 text-white text-[10px] font-bold py-2 rounded-lg">Approve</button>
+                                <button onclick="processRequest('${r.id}', 'denied')" class="flex-grow bg-red-500 text-white text-[10px] font-bold py-2 rounded-lg">Deny</button>
                             </div>` : ''}
                     </div>`;
                 if (r.staffId === currentUser.uid) myList.innerHTML += card;
@@ -299,348 +376,348 @@
             });
         }
 
-        function renderRoster() {
-            const roster = document.getElementById('attendance-roster');
-            if (!roster) return;
-            roster.innerHTML = '';
-            const selectedDate = document.getElementById('attendance-date').value;
-            staffList.forEach(s => {
-                if (s.role === 'admin') return;
-                const approvedAbsence = globalRequests.find(r => r.staffId === s.id && r.status === 'accepted' && r.date === selectedDate);
-                const div = document.createElement('div');
-                div.className = `py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 ${approvedAbsence ? 'opacity-50 grayscale bg-slate-50' : ''}`;
-                div.innerHTML = `
-                    <div>
-                        <p class="font-bold text-slate-900">${s.username} <span class="text-[10px] text-slate-400">(${s.firstName} ${s.lastName})</span></p>
-                        ${approvedAbsence ? `<span class="text-[10px] text-orange-600 font-bold italic">PRE-APPROVED: ${approvedAbsence.reason}</span>` : ''}
-                    </div>
-                    <div class="flex gap-4 items-center">
-                        <label class="flex items-center gap-1"><input type="radio" name="att-${s.id}" value="P" ${approvedAbsence ? 'disabled' : 'checked'}> <span class="text-xs font-bold">P</span></label>
-                        <label class="flex items-center gap-1"><input type="radio" name="att-${s.id}" value="L" ${approvedAbsence ? 'disabled' : ''}> <span class="text-xs font-bold">L</span></label>
-                        <label class="flex items-center gap-1"><input type="radio" name="att-${s.id}" value="A" ${approvedAbsence ? 'disabled checked' : ''}> <span class="text-xs font-bold">A</span></label>
-                        <input type="text" placeholder="Reason (if absent)" id="reason-${s.id}" class="text-xs border rounded-lg p-2 w-48 outline-none">
-                    </div>`;
-                roster.appendChild(div);
-            });
-        }
-
-        function renderStaffDirectory() {
+        function updateStaffTable() {
             const body = document.getElementById('staff-table-body');
             if (!body) return;
             body.innerHTML = '';
             staffList.forEach(s => {
-                if (s.role === 'admin' && s.id === 'initial-admin') return;
-                const row = document.createElement('tr');
-                row.className = "border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer transition-colors";
-                row.onclick = (e) => {
-                    if (e.target.closest('button')) return;
-                    viewStaffProfile(s.id);
-                };
-                row.innerHTML = `
-                    <td class="p-4">
-                        <div class="font-bold text-slate-700">${s.title || ''} ${s.firstName || s.username} ${s.lastName || ''}</div>
-                        <div class="text-[10px] uppercase font-black tracking-wider text-slate-400">${s.role} / Login: ${s.username}</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="text-sm font-medium text-slate-600 flex items-center gap-2"><i class="fab fa-discord text-indigo-500"></i> ${s.discord || 'N/A'}</div>
-                        <div class="text-[10px] text-slate-400 flex items-center gap-2"><i class="fas fa-gamepad"></i> ${s.roblox || 'N/A'}</div>
-                    </td>
-                    <td class="p-4"><span class="bg-red-50 text-red-600 px-2 py-1 rounded font-black text-xs">${(s.strikes || []).length}</span></td>
-                    <td class="p-4">
-                        <div class="flex gap-2">
-                            <button onclick="openStrikeModal('${s.id}', '${s.username}')" class="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100 transition-colors" title="Issue Strike"><i class="fas fa-gavel"></i></button>
-                            <button onclick="deleteDocById('users', '${s.id}')" class="bg-slate-100 text-slate-400 p-2 rounded-lg hover:text-red-600 transition-colors"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </td>`;
-                body.appendChild(row);
+                if (s.uid === 'root') return;
+                body.innerHTML += `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer group" onclick="if(!event.target.closest('button')) viewStaffProfile('${s.id}')">
+                        <td class="p-4">
+                            <div class="font-bold text-slate-700 text-sm"><span class="text-slate-400 font-medium mr-1">${s.title || ''}</span>${s.firstName} ${s.lastName}</div>
+                            <div class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Site Access: ${s.username}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded"><i class="fab fa-discord mr-1"></i> ${s.discord || 'N/A'}</span>
+                                <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded"><i class="fas fa-gamepad mr-1"></i> ${s.roblox || 'N/A'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="text-xs font-bold ${s.strikes?.length ? 'text-red-500' : 'text-slate-300'}">${s.strikes?.length || 0}</span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="strikeStaff('${s.id}', '${s.firstName} ${s.lastName}')" class="bg-red-50 text-red-500 p-2 rounded-lg hover:bg-red-100"><i class="fas fa-gavel text-xs"></i></button>
+                                <button onclick="deleteData('users', '${s.id}')" class="bg-slate-50 text-slate-400 p-2 rounded-lg hover:text-red-600"><i class="fas fa-trash-alt text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
             });
         }
 
-        window.viewStaffProfile = (id) => {
-            const s = staffList.find(x => x.id === id);
-            if (!s) return;
-            const history = attendanceLogs.filter(l => l.staffId === id);
-            const present = history.filter(h => h.status === 'P').length;
-            const rating = history.length ? Math.round((present / history.length) * 100) : 100;
-
-            showModal(`
-                <div class="space-y-6">
-                    <div class="flex justify-between items-start">
+        function updateRosterUI() {
+            const roster = document.getElementById('attendance-roster');
+            if (!roster) return;
+            roster.innerHTML = '';
+            const selDate = document.getElementById('attendance-date').value;
+            
+            staffList.filter(s => s.role !== 'admin' || s.uid !== 'root').forEach(s => {
+                const loa = globalRequests.find(r => r.staffId === s.id && r.status === 'accepted' && r.date === selDate);
+                roster.innerHTML += `
+                    <div class="py-4 flex items-center justify-between ${loa ? 'opacity-40' : ''}">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-900">${s.title || ''} ${s.firstName} ${s.lastName}</h2>
-                            <p class="text-sm text-blue-600 font-bold uppercase tracking-widest">${s.role} Portal Access</p>
+                            <p class="font-bold text-slate-800 text-sm">${s.title || ''} ${s.firstName} ${s.lastName}</p>
+                            ${loa ? `<span class="text-[9px] text-blue-600 font-bold uppercase italic"><i class="fas fa-clock"></i> Approved LOA</span>` : ''}
                         </div>
-                        <div class="text-right">
-                            <div class="text-3xl font-black text-blue-600">${rating}%</div>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">Attendance Rating</p>
+                        <div class="flex gap-3">
+                            <select id="att-${s.id}" ${loa ? 'disabled' : ''} class="text-xs border rounded-lg p-2 bg-slate-50 outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="P" ${loa ? '' : 'selected'}>Present</option>
+                                <option value="L">Late</option>
+                                <option value="A" ${loa ? 'selected' : ''}>Absent</option>
+                            </select>
+                            <input type="text" placeholder="Add note..." id="note-${s.id}" class="text-xs border rounded-lg p-2 w-32 outline-none">
                         </div>
-                    </div>
+                    </div>`;
+            });
+        }
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-4 bg-slate-50 rounded-2xl">
-                            <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Internal Credentials</p>
-                            <p class="text-sm font-bold">Username: <span class="text-slate-600 font-normal">${s.username}</span></p>
-                            <p class="text-sm font-bold">Password: <span class="text-slate-600 font-normal">${s.password}</span></p>
-                        </div>
-                        <div class="p-4 bg-slate-50 rounded-2xl">
-                            <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Linked Socials</p>
-                            <p class="text-sm font-bold">Discord: <span class="text-indigo-600 font-normal">${s.discord || 'Not linked'}</span></p>
-                            <p class="text-sm font-bold">Roblox: <span class="text-slate-600 font-normal">${s.roblox || 'Not linked'}</span></p>
-                        </div>
-                    </div>
+        function refreshProfile() {
+            if (!currentUser) return;
+            const u = staffList.find(s => s.id === currentUser.uid);
+            const strDiv = document.getElementById('my-strikes');
+            const ratDiv = document.getElementById('my-attendance-rating');
+            if(!strDiv || !ratDiv) return;
 
-                    <div>
-                        <h3 class="font-bold border-b pb-2 mb-4">Strike Records</h3>
-                        <div class="space-y-2">
-                            ${(s.strikes || []).length ? s.strikes.map(st => `
-                                <div class="p-3 bg-red-50 border border-red-100 rounded-xl flex justify-between items-start">
-                                    <div>
-                                        <p class="text-sm font-bold text-red-900">${st.reason}</p>
-                                        <p class="text-[10px] text-red-400 font-bold">Issued by: ${st.issuer || 'System'}</p>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-red-400">${st.date}</span>
-                                </div>
-                            `).join('') : '<p class="text-xs text-slate-400 italic">No strikes recorded.</p>'}
+            strDiv.innerHTML = (u?.strikes && u.strikes.length > 0) ? '' : '<p class="text-xs text-slate-400 italic">No disciplinary actions recorded.</p>';
+            (u?.strikes || []).forEach(st => {
+                strDiv.innerHTML += `
+                    <div class="p-4 bg-red-50 border border-red-100 rounded-xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[9px] font-bold text-red-600 uppercase tracking-tighter">Official Warning</span>
+                            <span class="text-[9px] text-slate-400 font-bold">${st.date}</span>
                         </div>
-                    </div>
+                        <p class="text-xs text-slate-700 font-medium leading-relaxed">${st.reason}</p>
+                        <p class="text-[9px] text-slate-400 mt-2">Issued By: ${st.issuer || 'System'}</p>
+                    </div>`;
+            });
 
-                    <div>
-                        <h3 class="font-bold border-b pb-2 mb-4">Attendance History</h3>
-                        <div class="max-h-48 overflow-y-auto custom-scrollbar space-y-2 pr-2">
-                            ${history.length ? history.sort((a,b) => new Date(b.date) - new Date(a.date)).map(l => `
-                                <div class="flex items-center justify-between p-2 border-b text-xs">
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-6 h-6 rounded flex items-center justify-center font-bold ${l.status === 'P' ? 'bg-green-100 text-green-700' : l.status === 'L' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${l.status}</span>
-                                        <div>
-                                            <p class="font-bold">${l.session}</p>
-                                            <p class="text-[10px] text-slate-400">${l.date}</p>
-                                        </div>
-                                    </div>
-                                    ${l.reason ? `<span class="text-[10px] italic text-slate-500">${l.reason}</span>` : ''}
-                                </div>
-                            `).join('') : '<p class="text-xs text-slate-400 italic">No session history found.</p>'}
-                        </div>
-                    </div>
-                </div>
-            `);
+            const logs = attendanceLogs.filter(l => l.staffId === currentUser.uid);
+            const present = logs.filter(l => l.status === 'P').length;
+            ratDiv.innerText = logs.length ? Math.round((present / logs.length) * 100) + '%' : '100%';
+        }
+
+        window.logout = () => { localStorage.removeItem('wf_session_active'); location.reload(); };
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-tab'));
+            document.getElementById(`tab-${id}`).classList.add('active');
+            const targetBtn = document.querySelector(`[data-tab="${id}"]`);
+            if(targetBtn) targetBtn.classList.add('active-tab');
+        };
+        window.closeModal = () => document.getElementById('modal-container').classList.add('hidden');
+        window.deleteData = async (c, id) => {
+            if(!authUser) return;
+            if(confirm("Confirm deletion?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id));
         };
 
-        function updateMyStats() {
-            if (!currentUser) return;
-            const user = staffList.find(s => s.id === currentUser.uid);
-            if (!user) return;
-            const strikeList = document.getElementById('my-strikes');
-            if(strikeList) {
-                strikeList.innerHTML = user.strikes?.length ? '' : '<p class="text-sm text-slate-400 italic">No strikes recorded.</p>';
-                (user.strikes || []).forEach(st => {
-                    strikeList.innerHTML += `
-                        <div class="p-4 bg-red-50 border border-red-100 rounded-xl">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-black text-red-600 uppercase">OFFENSE</span>
-                                <span class="text-[10px] text-slate-400 font-bold">${st.date}</span>
-                            </div>
-                            <p class="text-sm text-slate-700"><b>Reason:</b> ${st.reason}</p>
-                            <p class="text-[10px] mt-2 text-red-400 font-bold uppercase">ISSUED BY ${st.issuer || 'System'}</p>
-                        </div>`;
-                });
-            }
-            const myHistory = attendanceLogs.filter(l => l.staffId === currentUser.uid);
-            const presentCount = myHistory.filter(h => h.status === 'P').length;
-            const rating = myHistory.length ? Math.round((presentCount / myHistory.length) * 100) : 100;
-            const ratingDiv = document.getElementById('my-attendance-rating');
-            if(ratingDiv) ratingDiv.innerText = `${rating}%`;
-        }
+        window.openStaffModal = () => {
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold mb-4">Onboard New Personnel</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-3 gap-4">
+                         <div class="col-span-1">
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Title</label>
+                            <input type="text" id="sf-title" placeholder="Mr/Ms/Dr" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">First Name</label>
+                            <input type="text" id="sf-fname" placeholder="First Name" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Last Name</label>
+                            <input type="text" id="sf-lname" placeholder="Last Name" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Discord Username</label>
+                            <input type="text" id="sf-discord" placeholder="Discord#0000" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Roblox Username</label>
+                            <input type="text" id="sf-roblox" placeholder="Username" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Portal Username</label>
+                            <input type="text" id="sf-user" placeholder="Login User" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Portal Password</label>
+                            <input type="password" id="sf-pass" placeholder="Login Pass" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        </div>
+                    </div>
+                    <select id="sf-role" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        <option value="staff">Standard Staff</option>
+                        <option value="admin">Admin Portal Access</option>
+                    </select>
+                </div>
+                <button onclick="saveStaff()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl mt-6 shadow-lg shadow-blue-100">Create Personnel Entry</button>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
+        };
 
-        window.handleRequest = async (id, status) => {
-            if (!currentAuthUser) return;
-            const adminReason = status === 'denied' ? prompt("Denial reason:") : "";
-            if (status === 'denied' && !adminReason) return;
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id), {
-                status, adminReason, handledBy: currentUser.username
-            });
+        window.saveStaff = async () => {
+            if(!authUser) return;
+            const data = {
+                title: document.getElementById('sf-title').value,
+                firstName: document.getElementById('sf-fname').value,
+                lastName: document.getElementById('sf-lname').value,
+                discord: document.getElementById('sf-discord').value,
+                roblox: document.getElementById('sf-roblox').value,
+                username: document.getElementById('sf-user').value,
+                password: document.getElementById('sf-pass').value,
+                role: document.getElementById('sf-role').value,
+                strikes: [],
+                timestamp: Date.now()
+            };
+            if(!data.username || !data.password || !data.firstName) return alert("Full name and credentials required.");
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'users'), data);
+            closeModal();
         };
 
         window.submitAttendance = async () => {
-            if (!currentAuthUser) return;
+            if(!authUser) return;
             const date = document.getElementById('attendance-date').value;
             const session = document.getElementById('attendance-session-name').value;
-            if (!date || !session) return alert("Date and Session name required");
-            for (const s of staffList) {
-                if (s.role === 'admin') continue;
-                const statusInput = document.querySelector(`input[name="att-${s.id}"]:checked`);
-                if(!statusInput) continue;
-                const status = statusInput.value;
-                const reason = document.getElementById(`reason-${s.id}`).value;
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'attendance_logs'), {
-                    staffId: s.id, status, reason, date, session
+            if(!date || !session) return alert("Missing session details.");
+            
+            for(const s of staffList) {
+                if(s.uid === 'root') continue;
+                const status = document.getElementById(`att-${s.id}`).value;
+                const note = document.getElementById(`note-${s.id}`).value;
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'), {
+                    staffId: s.id, status, note, date, session, timestamp: Date.now()
                 });
             }
-            alert("Attendance Logged Successfully");
+            alert("Attendance logged.");
             document.getElementById('attendance-session-name').value = '';
-        };
-
-        window.deleteDocById = async (col, id) => { 
-            if (!currentAuthUser) return;
-            if (confirm(`Confirm deletion of this ${col === 'users' ? 'staff member' : 'item'}? This cannot be undone.`)) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', col, id));
-                    if(col === 'users') closeModal();
-                } catch (error) {
-                    alert("Delete failed. Permission error.");
-                }
-            }
+            updateRosterUI();
         };
 
         window.openNoticeModal = () => {
-            showModal(`<h2 class="text-xl font-bold mb-4">Post Notice</h2>
-                <input type="text" id="n-title" placeholder="Title" class="w-full border p-4 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
-                <textarea id="n-content" placeholder="Type announcement content here..." class="w-full border p-4 rounded-xl mb-4 h-32 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                <button onclick="saveNotice()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Publish Notice</button>`);
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold mb-4">Post Announcement</h2>
+                <input type="text" id="n-title" placeholder="Notice Title" class="w-full border p-3 rounded-xl mb-4 text-sm">
+                <textarea id="n-content" placeholder="Details..." class="w-full border p-3 rounded-xl mb-4 h-32 text-sm"></textarea>
+                <button onclick="saveNotice()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl">Publish Notice</button>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
         };
+
         window.saveNotice = async () => {
-            if (!currentAuthUser) return;
+            if(!authUser) return;
+            const title = document.getElementById('n-title').value;
+            const content = document.getElementById('n-content').value;
+            if(!title || !content) return;
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'notices'), {
-                title: document.getElementById('n-title').value, content: document.getElementById('n-content').value,
-                date: new Date().toLocaleDateString(), author: currentUser.username
+                title, content, date: new Date().toLocaleDateString(), author: currentUser.username, timestamp: Date.now()
             });
             closeModal();
         };
 
         window.openRequestModal = (type) => {
-            showModal(`<h2 class="text-xl font-bold mb-4">New ${type} Request</h2>
-                <input type="date" id="r-date" class="w-full border p-4 rounded-xl mb-4">
-                <textarea id="r-reason" placeholder="Explain why you need this absence..." class="w-full border p-4 rounded-xl mb-4 h-24 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                <button onclick="saveRequest('${type}')" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">Submit Request</button>`);
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold mb-4">Submit ${type}</h2>
+                <input type="date" id="r-date" class="w-full border p-3 rounded-xl mb-4 text-sm">
+                <textarea id="r-reason" placeholder="Explain your request..." class="w-full border p-3 rounded-xl mb-4 h-32 text-sm"></textarea>
+                <button onclick="saveRequest('${type}')" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl">Send to Admin</button>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
         };
+
         window.saveRequest = async (type) => {
-            if (!currentAuthUser) return;
+            if(!authUser) return;
+            const date = document.getElementById('r-date').value;
+            const reason = document.getElementById('r-reason').value;
+            if(!date || !reason) return;
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), {
-                type, date: document.getElementById('r-date').value, reason: document.getElementById('r-reason').value,
-                staffId: currentUser.uid, staffName: currentUser.username, status: 'pending', adminReason: ''
+                type, date, reason, staffId: currentUser.uid, staffName: currentUser.username, status: 'pending', timestamp: Date.now()
             });
             closeModal();
         };
 
-        window.openStrikeModal = (id, name) => {
-            showModal(`<h2 class="text-xl font-bold mb-2">Issue Strike</h2><p class="text-sm text-slate-500 mb-4">Recipient: ${name}</p>
-                <textarea id="st-reason" placeholder="Reason for strike..." class="w-full border p-4 rounded-xl mb-4 h-24 focus:ring-2 focus:ring-red-500 outline-none"></textarea>
-                <button onclick="saveStrike('${id}')" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">Submit Strike</button>`);
+        window.processRequest = async (id, status) => {
+            if(!authUser) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id), { status });
         };
-        window.saveStrike = async (id) => {
-            if (!currentAuthUser) return;
+
+        window.strikeStaff = (id, name) => {
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold text-red-600 mb-1">Issue Strike</h2>
+                <p class="text-xs text-slate-400 mb-4">Against: ${name}</p>
+                <textarea id="st-reason" placeholder="Violation details..." class="w-full border p-3 rounded-xl mb-4 h-32 text-sm"></textarea>
+                <button onclick="confirmStrike('${id}')" class="w-full bg-red-600 text-white font-bold py-4 rounded-xl">Finalize Action</button>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
+        };
+
+        window.confirmStrike = async (id) => {
+            if(!authUser) return;
+            const reason = document.getElementById('st-reason').value;
+            if(!reason) return;
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id), {
-                strikes: arrayUnion({ 
-                    reason: document.getElementById('st-reason').value, 
-                    date: new Date().toLocaleDateString(),
-                    issuer: currentUser.username 
-                })
+                strikes: arrayUnion({ reason, date: new Date().toLocaleDateString(), issuer: currentUser.username, timestamp: Date.now() })
             });
             closeModal();
         };
 
-        window.openStaffModal = () => {
-            showModal(`
-                <h2 class="text-xl font-bold mb-4">Onboard New Staff</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Title</label>
-                        <select id="u-title" class="w-full border p-3 rounded-xl mb-4 bg-white"><option>Mr</option><option>Mrs</option><option>Miss</option><option>Ms</option><option>Mx</option><option>Dr</option><option>Prof</option></select>
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Portal Role</label>
-                        <select id="u-role" class="w-full border p-3 rounded-xl mb-4 bg-white"><option value="staff">Standard Staff</option><option value="admin">Administrator</option></select>
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">First Name</label>
-                        <input type="text" id="u-fname" placeholder="John" class="w-full border p-3 rounded-xl mb-4">
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Last Name</label>
-                        <input type="text" id="u-lname" placeholder="Doe" class="w-full border p-3 rounded-xl mb-4">
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Discord Username</label>
-                        <input type="text" id="u-disc" placeholder="john.doe" class="w-full border p-3 rounded-xl mb-4">
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Roblox Username</label>
-                        <input type="text" id="u-robx" placeholder="RobloxPlayer123" class="w-full border p-3 rounded-xl mb-4">
-                    </div>
-                    <div class="col-span-2 border-t pt-4">
-                        <p class="text-[10px] font-black uppercase text-blue-600 mb-2">Portal Access Credentials</p>
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Website Username</label>
-                        <input type="text" id="u-user" placeholder="j.doe" class="w-full border p-3 rounded-xl mb-4">
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Website Password</label>
-                        <input type="password" id="u-pass" placeholder="••••••••" class="w-full border p-3 rounded-xl mb-4">
+        window.removeStrike = async (staffId, strikeTimestamp) => {
+            if(!authUser || !confirm("Remove this disciplinary record?")) return;
+            const s = staffList.find(x => x.id === staffId);
+            const filtered = s.strikes.filter(st => st.timestamp !== strikeTimestamp);
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', staffId), { strikes: filtered });
+            viewStaffProfile(staffId); // Refresh modal
+        };
+
+        window.viewStaffProfile = (id) => {
+            const s = staffList.find(x => x.id === id);
+            const hist = attendanceLogs.filter(l => l.staffId === id).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+            
+            document.getElementById('modal-content').innerHTML = `
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center text-3xl font-bold shadow-xl shadow-blue-100">${s.firstName[0]}</div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">${s.title || ''} ${s.firstName} ${s.lastName}</h2>
+                        <div class="flex gap-2 mt-1">
+                            <span class="text-[10px] font-black uppercase text-blue-500 bg-blue-50 px-2 py-0.5 rounded tracking-widest">${s.role}</span>
+                            <span class="text-[10px] font-bold text-slate-400">ID: ${s.id.slice(0,8)}...</span>
+                        </div>
                     </div>
                 </div>
-                <button onclick="saveStaff()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg shadow-slate-200">Create Staff Profile</button>`);
-        };
-        window.saveStaff = async () => {
-            if (!currentAuthUser) return;
-            const data = {
-                title: document.getElementById('u-title').value,
-                firstName: document.getElementById('u-fname').value,
-                lastName: document.getElementById('u-lname').value,
-                discord: document.getElementById('u-disc').value,
-                roblox: document.getElementById('u-robx').value,
-                username: document.getElementById('u-user').value,
-                password: document.getElementById('u-pass').value,
-                role: document.getElementById('u-role').value,
-                strikes: [],
-                joinedDate: new Date().toLocaleDateString()
-            };
-            if(!data.firstName || !data.username || !data.password) return alert("Required: First Name, Username, and Password");
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'users'), data);
-            closeModal();
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-1">Information Details</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                    <span class="text-slate-400 font-medium">Discord Handle</span>
+                                    <span class="font-bold text-slate-700">${s.discord || 'Not Linked'}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                    <span class="text-slate-400 font-medium">Roblox Profile</span>
+                                    <span class="font-bold text-slate-700">${s.roblox || 'Not Linked'}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                    <span class="text-slate-400 font-medium">Site Username</span>
+                                    <span class="font-bold text-slate-700">${s.username}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                    <span class="text-slate-400 font-medium">Site Password</span>
+                                    <span class="font-bold text-slate-700">${currentUser.role === 'admin' ? s.password : '••••••••'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-1">Disciplinary Action (${s.strikes?.length || 0})</h3>
+                            <div class="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                                ${(s.strikes && s.strikes.length > 0) ? s.strikes.map(st => `
+                                    <div class="p-3 bg-red-50 border border-red-100 rounded-xl relative group/st">
+                                        ${currentUser.role === 'admin' ? `<button onclick="removeStrike('${s.id}', ${st.timestamp})" class="absolute top-2 right-2 text-red-300 hover:text-red-600 opacity-0 group-hover/st:opacity-100"><i class="fas fa-times-circle"></i></button>` : ''}
+                                        <div class="flex justify-between text-[9px] font-bold text-red-600 mb-1">
+                                            <span>${st.date}</span>
+                                            <span>BY: ${st.issuer}</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-700 leading-relaxed font-medium">${st.reason}</p>
+                                    </div>
+                                `).join('') : '<p class="text-[10px] italic text-slate-400">Clean disciplinary record.</p>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-1">Attendance History</h3>
+                        <div class="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                            ${hist.length ? hist.map(h => `
+                                <div class="flex items-center justify-between p-3 border-b border-slate-50 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-slate-800 truncate">${h.session || 'General Session'}</p>
+                                        <p class="text-[9px] text-slate-400">${h.date}</p>
+                                    </div>
+                                    <span class="text-[10px] font-black px-2 py-1 rounded ${h.status === 'P' ? 'bg-green-100 text-green-600' : h.status === 'L' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'}">
+                                        ${h.status === 'P' ? 'PRESENT' : h.status === 'L' ? 'LATE' : 'ABSENT'}
+                                    </span>
+                                </div>
+                            `).join('') : '<div class="text-center py-12 text-slate-300"><i class="fas fa-calendar-times text-2xl mb-2"></i><p class="text-[10px] font-bold">NO LOGS FOUND</p></div>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
         };
 
-        window.switchTab = (tab) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            const target = document.getElementById(`tab-${tab}`);
-            if(target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => {
-                b.classList.toggle('active-tab', b.dataset.tab === tab);
-            });
-        };
-        window.showModal = (html) => { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-container').classList.remove('hidden'); };
-        window.closeModal = () => document.getElementById('modal-container').classList.add('hidden');
-        window.logout = () => { localStorage.removeItem('wf_staff_session'); location.reload(); };
-
-        document.getElementById('login-form').onsubmit = async (e) => {
+        document.getElementById('login-form').onsubmit = (e) => {
             e.preventDefault();
-            if (!authReady) return alert("System connecting...");
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            if (u === 'admin' && p === 'setup123') {
-                const session = { username: 'Super Admin', role: 'admin', uid: 'initial-admin' };
-                localStorage.setItem('wf_staff_session', JSON.stringify(session));
-                applySession(session);
-                return;
-            }
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
-            let found = false;
-            snap.forEach(d => {
-                const data = d.data();
-                if (data.username === u && data.password === p) {
-                    found = true;
-                    const session = { ...data, uid: d.id };
-                    localStorage.setItem('wf_staff_session', JSON.stringify(session));
-                    applySession(session);
-                }
-            });
-            if (!found) alert("Incorrect credentials.");
+            verifyUser(document.getElementById('username').value, document.getElementById('password').value);
         };
 
-        const todayInput = document.getElementById('attendance-date');
-        if(todayInput) {
-            todayInput.valueAsDate = new Date();
-            todayInput.onchange = renderRoster;
-        }
+        document.getElementById('attendance-date').valueAsDate = new Date();
+        startApp();
     </script>
 </body>
 </html>
